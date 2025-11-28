@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rq3_u%3azzpw7vcykwzuw#1#9$4er-pj^8j1!me6qht*#c$du2'
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-rq3_u%3azzpw7vcykwzuw#1#9$4er-pj^8j1!me6qht*#c$du2",
+)
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY must be set")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() in {"true", "1", "yes", "on"}
 
-ALLOWED_HOSTS = []
+default_allowed_hosts = ["localhost", "127.0.0.1", "[::1]"]
+env_allowed_hosts = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
+
+ALLOWED_HOSTS = default_allowed_hosts + [
+    host for host in env_allowed_hosts if host not in default_allowed_hosts
+]
 
 
 # Application definition
